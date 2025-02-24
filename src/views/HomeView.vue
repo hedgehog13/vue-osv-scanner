@@ -1,14 +1,10 @@
 <template>
   <div>
-    <h1>OSV Scanner</h1>
-    <p>Upload a package.json file to check for vulnerabilities.</p>
+    <h1>Home Page</h1>
+    <FileUpload />
   </div>
 </template>
 
-<script lang="ts" setup></script>
-
-<style scoped>
-h1 {
-  color: #007bff;
-}
-</style>
+<script setup lang="ts">
+import FileUpload from '@/components/FileUpload.vue'
+</script>
