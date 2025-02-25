@@ -2,9 +2,9 @@
   <div class="file-upload-view">
     <h1>Vulnerability Scanner</h1>
 
-    <FileUpload @scanCompleted="updateResults" />
+    <FileUpload @scanCompleted="updateResults" @reset="handleReset" />
 
-    <VulnerabilityTable v-if="results?.length" :results="results" />
+    <VulnerabilityTable v-if="results.length > 0" :results="results" />
   </div>
 </template>
 
@@ -20,14 +20,18 @@ export default defineComponent({
     VulnerabilityTable,
   },
   setup() {
-    const results = ref([])
+    const results = ref<unknown[]>([])
     const updateResults = (newResults: unknown) => {
-      results.value = newResults as unknown[]
+      results.value = Array.isArray(newResults) ? newResults : []
+    }
+    const handleReset = () => {
+      results.value = [] // Clear the results
     }
 
     return {
       results,
       updateResults,
+      handleReset,
     }
   },
 })

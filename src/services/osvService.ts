@@ -23,13 +23,13 @@ const API_URL = '/api/v1/query';
 export function useScanService() {
   const results = ref<VulnerabilityResult[]>([]);
   const isScanning = ref(false);
-
+  const scanComplete = ref(false);
   // Fetch vulnerabilities for a given list of dependencies
   const fetchVulnerabilities = async (dependencies: Dependency[]): Promise<VulnerabilityResult[]> => {
     if (!dependencies.length) return [];
 
     isScanning.value = true;
-
+    scanComplete.value = false
     try {
       const requests = dependencies.map((dep) =>
         axios
@@ -54,6 +54,7 @@ export function useScanService() {
       return [];
     } finally {
       isScanning.value = false;
+      scanComplete.value = true;
     }
   };
 
@@ -61,5 +62,6 @@ export function useScanService() {
     results,
     isScanning,
     fetchVulnerabilities,
+    scanComplete
   };
 }

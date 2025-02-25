@@ -3,7 +3,7 @@ import { useScanService } from '@/services/osvService'; // Import the scan servi
 
 export function useFileUpload(emit: (event: "fileSelected" | "scanCompleted", payload: unknown) => void) {
   const file = ref<File | null>(null);
-  const { results, isScanning, fetchVulnerabilities } = useScanService(); // Use scan service
+  const { results, isScanning, scanComplete, fetchVulnerabilities } = useScanService(); // Use scan service
 
   const handleFileUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
@@ -47,5 +47,6 @@ export function useFileUpload(emit: (event: "fileSelected" | "scanCompleted", pa
     results,
     handleFileUpload,
     scanFile,
+    scanComplete
   };
 }
