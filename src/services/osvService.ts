@@ -47,8 +47,8 @@ export function useScanService() {
           })
       );
 
-      results.value = await Promise.all(requests);
-      return results.value;
+      return await Promise.all(requests);
+
     } catch (error) {
       console.error('Error fetching vulnerabilities:', error);
       return [];
