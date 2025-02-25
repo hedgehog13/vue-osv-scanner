@@ -1,6 +1,14 @@
 # vue-osv-scanner
 
-This template should help get you started developing with Vue 3 in Vite.
+This project is a Vue 3 + TypeScript application that scans package.json files for vulnerabilities using the OSV API. It allows users to upload a file, perform a scan, and view the results in a structured table.
+
+## Features
+
+- Upload package.json file for vulnerability scanning
+- Fetch vulnerability data from the OSV API
+- Display results in a table with severity levels
+- View detailed vulnerability information
+- Reset functionality to scan new files
 
 ## Recommended IDE Setup
 
