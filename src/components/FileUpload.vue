@@ -1,9 +1,12 @@
 <template>
-  <div>
-    <input type="file" @change="handleFileUpload" accept=".json" />
-    <button @click="scanFile" :disabled="!file || isScanning">
-      {{ isScanning ? 'Scanning...' : 'Scan' }}
-    </button>
+  <div class="file-upload-container">
+    <h3>Upload Your File</h3>
+    <div class="file-upload">
+      <input type="file" @change="handleFileUpload" accept=".json" />
+      <button @click="scanFile" :disabled="!file || isScanning">
+        {{ isScanning ? 'Scanning...' : 'Scan' }}
+      </button>
+    </div>
   </div>
 </template>
 
