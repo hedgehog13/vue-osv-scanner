@@ -1,4 +1,5 @@
-import axios from "axios";
+import axios from 'axios';
+import { ref } from 'vue';
 
 export interface Dependency {
   name: string;
@@ -17,27 +18,48 @@ export interface VulnerabilityResult {
   vulnerabilities: Vulnerability[];
 }
 
-const API_URL = "api/v1/query";
+const API_URL = '/api/v1/query';
 
-export const fetchVulnerabilities = async (dependencies: Dependency[]): Promise<VulnerabilityResult[]> => {
-  try {
-    const results = await Promise.all(
-      dependencies.map(async (dep) => {
-        const response = await axios.post(API_URL, {
-          package: { name: dep.name, ecosystem: "npm" },
-          version: dep.version,
-        });
+export function useScanService() {
+  const results = ref<VulnerabilityResult[]>([]);
+  const isScanning = ref(false);
 
-        return {
-          package: dep.name,
-          vulnerabilities: response.data.vulns || [],
-        };
-      })
-    );
+  // Fetch vulnerabilities for a given list of dependencies
+  const fetchVulnerabilities = async (dependencies: Dependency[]): Promise<VulnerabilityResult[]> => {
+    if (!dependencies.length) return [];
 
-    return results;
-  } catch (error) {
-    console.error("Error fetching vulnerabilities:", error);
-    return [];
-  }
-};
+    isScanning.value = true;
+
+    try {
+      const requests = dependencies.map((dep) =>
+        axios
+          .post(API_URL, {
+            package: { name: dep.name, ecosystem: 'npm' },
+            version: dep.version,
+          })
+          .then((response) => ({
+            package: dep.name,
+            vulnerabilities: response.data.vulns || [],
+          }))
+          .catch((error) => {
+            console.error(`Error fetching vulnerabilities for ${dep.name}:`, error);
+            return { package: dep.name, vulnerabilities: [] }; // Return empty vulnerabilities if the request fails
+          })
+      );
+
+      results.value = await Promise.all(requests);
+      return results.value;
+    } catch (error) {
+      console.error('Error fetching vulnerabilities:', error);
+      return [];
+    } finally {
+      isScanning.value = false;
+    }
+  };
+
+  return {
+    results,
+    isScanning,
+    fetchVulnerabilities,
+  };
+}

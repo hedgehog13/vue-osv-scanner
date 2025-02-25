@@ -1,90 +1,51 @@
-import { ref } from "vue";
+import { ref } from 'vue';
+import { useScanService } from '@/services/osvService'; // Import the scan service
 
-
-interface Dependency {
-  name: string;
-  version: string;
-}
-
-interface Vulnerability {
-  id: string;
-  severity: string;
-  summary: string;
-  references: { url: string }[];
-}
-
-interface VulnerabilityResult {
-  package: string;
-  vulnerabilities: Vulnerability[];
-}
-
-export function useFileUpload() {
+export function useFileUpload(emit: (event: "fileSelected" | "scanCompleted", payload: unknown) => void) {
   const file = ref<File | null>(null);
-  const dependencies = ref<Dependency[]>([]);
-  const results = ref<Array<VulnerabilityResult>>([]);
-
+  const { results, isScanning, fetchVulnerabilities } = useScanService(); // Use scan service
 
   const handleFileUpload = (event: Event) => {
     const input = event.target as HTMLInputElement;
-    if (input.files) {
+    if (input.files && input.files[0]) {
       file.value = input.files[0];
+      emit('fileSelected', file.value); // Emit the file selection event
     }
   };
 
   const scanFile = async () => {
     if (!file.value) return;
 
-    results.value = [];
     const reader = new FileReader();
-
     reader.onload = async () => {
       try {
         const jsonContent = JSON.parse(reader.result as string);
 
         // Extract dependencies
-        dependencies.value = Object.entries({
+        const dependencies = Object.entries({
           ...jsonContent.dependencies,
           ...jsonContent.devDependencies,
         }).map(([name, version]) => ({
           name,
-          version: (version as string).replace(/^\^|~/, ""),
+          version: (version as string).replace(/^\^|~/, ''),
         }));
+
+        // Fetch vulnerabilities using the service
+        const scanResults = await fetchVulnerabilities(dependencies);
+        emit('scanCompleted', scanResults); // Emit the scan results to the parent
       } catch (error) {
-        console.error("Invalid JSON file", error);
+        console.error('Invalid JSON file:', error);
       }
-
-      results.value = await Promise.all(
-        dependencies.value.map((dep) =>
-          fetch("/api/v1/query", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              package: { name: dep.name, ecosystem: "npm" },
-              version: dep.version,
-            }),
-          }).then((res) =>
-            res.json().then((data) => ({
-              package: dep.name,
-              vulnerabilities: data.vulns || [],
-            }))
-          )
-        )
-      );
-      console.log("Vulnerability scan results:", results.value);
     };
-
 
     reader.readAsText(file.value);
   };
 
-
-
   return {
     file,
+    isScanning,
     results,
     handleFileUpload,
     scanFile,
-
-
   };
 }
